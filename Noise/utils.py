@@ -27,6 +27,9 @@ def load_meta_data(path, filename, shuffle=False):
 
     folds, classid = data[:, -2].astype(np.int32), data[:, -1].astype(np.int32)
 
+    classid[classid[:] in {0, 2, 5, 8, 9}] = 0
+    classid[classid[:] in {1, 3, 4, 6, 7}] = 1
+
     num_data = folds.shape[0]
     if shuffle:
         perm = np.random.permutation(num_data)

@@ -9,7 +9,7 @@ from utils import _initialize
 
 DATA_NAME = 'UrbanSound8K'
 TEST_FOLD = 10
-TRAINING = True
+TRAINING = False
 PREPROCESS = False
 # =================================================================
 assert DATA_NAME in ['UrbanSound8K']
@@ -31,9 +31,9 @@ if PREPROCESS:
     # preprocessing
     train_x, train_y, test_x = model.preprocess(train_dir, train_classid, test_dir)
 else:
-    train_x = pickle.load(open('train_X.pkl', 'rb'))
+    train_x = pickle.load(open('train_X_scaled.pkl', 'rb'))
     train_y = pickle.load(open('train_Y.pkl', 'rb'))
-    test_x = pickle.load(open('test_X.pkl', 'rb'))
+    test_x = pickle.load(open('test_X_scaled.pkl', 'rb'))
 
 if TRAINING:
     # TRAIN
@@ -45,7 +45,7 @@ else:
 
 # EVALUATION
 pred = model.eval(test_x)
-print('pred : ', pred, '\ntest_y : ', test_classid)
+# print('pred : ', pred, '\ntest_y : ', test_classid)
 
 acc = accuracy(pred, test_classid)
 print(' Accuracy on Test Data : %.2f' % acc)
