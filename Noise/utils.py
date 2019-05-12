@@ -1,8 +1,6 @@
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-from model.LogisticRegression import LogisticRegression
-
+from model.CNN import CNN
 
 def load_meta_data(path, filename, shuffle=False):
     fullpath = os.path.join(path, filename)
@@ -27,8 +25,12 @@ def load_meta_data(path, filename, shuffle=False):
 
     folds, classid = data[:, -2].astype(np.int32), data[:, -1].astype(np.int32)
 
-    classid[classid[:] in {0, 2, 5, 8, 9}] = 0
-    classid[classid[:] in {1, 3, 4, 6, 7}] = 1
+    # Classify the class id with dangerous one(1) and the others(0)
+    for idx, y in enumerate(classid):
+        if y in [0, 2, 5, 9]:
+            classid[idx] = 0
+        else:
+            classid[idx] = 1
 
     num_data = folds.shape[0]
     if shuffle:
@@ -67,36 +69,16 @@ def UrbanSound8KData(path, filename, test_fold):
 
     return (train_dir, train_classid), (test_dir, test_classid)
 
-def RMSE(h, y):
-    if len(h.shape) > 1:
-        h = h.squeeze()
-    se = np.square(h - y)
-    mse = np.mean(se)
-    rmse = np.sqrt(mse)
-    return rmse
-
-def Accuracy(h, y):
-    """
-    h : (N, ), predicted label
-    y : (N, ), correct label
-    """
-    if len(h.shape) == 1:
-        h = np.expand_dims(h, 1)
-    if len(y.shape) == 1:
-        y = np.expand_dims(y, 1)
-
-    total = h.shape[0]
-    correct = len(np.where(h==y)[0])
-    accuracy = correct / total
-
-    return accuracy
-
-config = {
-    'UrbanSound8K': ('metadata', 'audio', LogisticRegression, Accuracy)
+config_D = {
+    'UrbanSound8K': ('metadata', 'audio')
+}
+config_C = {
+    'CNN': CNN
 }
 
-def _initialize(data_name, test_fold):
-    dir_name_meta, _, model, metric = config[data_name]
+def _initialize(data_name, classifier_name, test_fold):
+    dir_name_meta, _ = config_D[data_name]
+    model = config_C[classifier_name]
     path = os.path.join('./data', dir_name_meta)
 
     if data_name == 'UrbanSound8K':
@@ -104,4 +86,4 @@ def _initialize(data_name, test_fold):
     else:
         raise NotImplementedError
 
-    return train_meta_data, test_meta_data, model, metric
+    return train_meta_data, test_meta_data, model
