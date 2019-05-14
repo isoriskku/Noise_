@@ -76,6 +76,18 @@ class CNN:
 
         return train_x, train_class, test_x, test_class
 
+    def preproc_test(self, path):
+        print('========== PREPROCESSING DATA ==========')
+        y, sr = librosa.load(path)
+        mfccs = np.mean(librosa.feature.mfcc(y, sr, n_mfcc=40).T, axis=0)
+        melspectrogram = np.mean(librosa.feature.melspectrogram(y=y, sr=sr, n_mels=40, fmax=8000).T, axis=0)
+        chroma_stft = np.mean(librosa.feature.chroma_stft(y=y, sr=sr, n_chroma=40).T, axis=0)
+        chroma_cq = np.mean(librosa.feature.chroma_cqt(y=y, sr=sr, n_chroma=40).T, axis=0)
+        chroma_cens = np.mean(librosa.feature.chroma_cens(y=y, sr=sr, n_chroma=40).T, axis=0)
+        features = np.reshape(np.vstack((mfccs, melspectrogram, chroma_stft, chroma_cq, chroma_cens)), (40, 5))
+
+        return features
+
     def train(self, train_x, train_y, test_x, test_y):
         # forming model
         self.model = Sequential()
@@ -135,3 +147,8 @@ class CNN:
         print(test_loss_score)
 
         return
+
+    def predict(self, x):
+        print('========== PREDICTION START ==========')
+        y = self.model.predict(x)[0]
+        return y
