@@ -28,7 +28,7 @@ f.close()
 print('Done sending')
 
 answer = s.recv(1024)
-if answer[0] == 1:
+if repr(answer)[0] == '1':
   # generate warning
 
 s.close()
