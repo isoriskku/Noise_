@@ -45,7 +45,7 @@ while True:
     f.close()
     print('Successfully get the file')
     
-    x = model.preproc_test(path)
+    x = model.preprocess(path)
     y = model.predict(x)
     
     if y == 1:

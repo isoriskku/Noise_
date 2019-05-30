@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import librosa
-from keras.utils.np_utils import to_categorical
 from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
 
@@ -9,74 +8,7 @@ class CNN:
     def __init__(self):
         self.model = None
 
-    def preprocess(self, train_dir, train_class, test_dir, test_class, b_preprocess):
-        train_x = None
-        test_x = None
-
-        if b_preprocess:
-            # ================= train_x, train_y ===================
-            print('========== PREPROCESSING DATA ==========')
-            train_x = []
-            for i, s in enumerate(train_dir):
-                audio_path = os.path.join('./data', s)
-                y, sr = librosa.load(audio_path)
-                mfccs = np.mean(librosa.feature.mfcc(y, sr, n_mfcc=40).T, axis=0)
-                melspectrogram = np.mean(librosa.feature.melspectrogram(y=y, sr=sr, n_mels=40, fmax=8000).T, axis=0)
-                chroma_stft = np.mean(librosa.feature.chroma_stft(y=y, sr=sr, n_chroma=40).T, axis=0)
-                chroma_cq = np.mean(librosa.feature.chroma_cqt(y=y, sr=sr, n_chroma=40).T, axis=0)
-                chroma_cens = np.mean(librosa.feature.chroma_cens(y=y, sr=sr, n_chroma=40).T, axis=0)
-                features = np.reshape(np.vstack((mfccs, melspectrogram, chroma_stft, chroma_cq, chroma_cens)), (40, 5))
-                train_x.append(features)
-                if i % 50 == 0:
-                    print('#', i+1, 'th data is processed')
-
-            train_x = np.array(train_x, dtype=np.float32)
-
-            # ===================== test_x =======================
-            test_x = []
-            for i, s in enumerate(test_dir):
-                audio_path = os.path.join('./data', s)
-                y, sr = librosa.load(audio_path)
-                mfccs = np.mean(librosa.feature.mfcc(y, sr, n_mfcc=40).T, axis=0)
-                melspectrogram = np.mean(librosa.feature.melspectrogram(y=y, sr=sr, n_mels=40, fmax=8000).T, axis=0)
-                chroma_stft = np.mean(librosa.feature.chroma_stft(y=y, sr=sr, n_chroma=40).T, axis=0)
-                chroma_cq = np.mean(librosa.feature.chroma_cqt(y=y, sr=sr, n_chroma=40).T, axis=0)
-                chroma_cens = np.mean(librosa.feature.chroma_cens(y=y, sr=sr, n_chroma=40).T, axis=0)
-                features = np.reshape(np.vstack((mfccs, melspectrogram, chroma_stft, chroma_cq, chroma_cens)), (40, 5))
-                test_x.append(features)
-                if i % 50 == 0:
-                    print('#', i + 1, 'th data is processed')
-
-            test_x = np.array(test_x, dtype=np.float32)
-
-            # reshaping into 2d to save in csv format
-            train_x_2d = np.reshape(train_x, (train_x.shape[0], train_x.shape[1] * train_x.shape[2]))
-            test_x_2d = np.reshape(test_x, (test_x.shape[0], test_x.shape[1] * test_x.shape[2]))
-            np.savetxt("train_data.csv", train_x_2d, delimiter=",")
-            np.savetxt("test_data.csv", test_x_2d, delimiter=",")
-            np.savetxt("train_labels.csv", train_class, delimiter=",")
-            np.savetxt("test_labels.csv", test_class, delimiter=",")
-        else:
-            train_x = np.genfromtxt('train_data.csv', delimiter=',')
-            train_class = np.genfromtxt('train_labels.csv', delimiter=',')
-            test_x = np.genfromtxt('test_data.csv', delimiter=',')
-            test_class = np.genfromtxt('test_labels.csv', delimiter=',')
-
-        # converting to one hot
-        train_class = to_categorical(train_class, num_classes=10)
-        test_class = to_categorical(test_class, num_classes=10)
-
-        # reshaping to 2D
-        train_x = np.reshape(train_x, (train_x.shape[0], 40, 5))
-        test_x = np.reshape(test_x, (test_x.shape[0], 40, 5))
-
-        # reshaping to shape required by CNN
-        train_x = np.reshape(train_x, (train_x.shape[0], 40, 5, 1))
-        test_x = np.reshape(test_x, (test_x.shape[0], 40, 5, 1))
-
-        return train_x, train_class, test_x, test_class
-
-    def preproc_test(self, path):
+    def preprocess(self, path):
         print('========== PREPROCESSING DATA ==========')
         y, sr = librosa.load(path)
         mfccs = np.mean(librosa.feature.mfcc(y, sr, n_mfcc=40).T, axis=0)
@@ -150,5 +82,5 @@ class CNN:
 
     def predict(self, x):
         print('========== PREDICTION START ==========')
-        y = self.model.predict(x)[0]
-        return y
+        y_pred = self.model.predict_classes(x)
+        return y_pred
