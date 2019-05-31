@@ -17,7 +17,7 @@ port = 50000
 # Create a socket object
 s = socket.socket()
 # Get local machine name
-host = ""
+host = "203.252.43.96"
 # Bind to the port
 s.bind((host, port))
 # Now wait for client connection. 
@@ -31,27 +31,27 @@ while True:
     conn, addr = s.accept()
     print('Got connection from', addr)
     data = conn.recv(1024)
-    print('Server received', repr(data))
+    print('Server received', data.decode())
     
     with open(path, 'wb') as f:
-    print('file opened')
-    while True:
-        print('receiving data...')
-        data = conn.recv(1024)
-        if not data:
-            break
-        # write data to a file
-        f.write(data)
+        print('file opened')
+        while True:
+            print('receiving data...')
+            data = conn.recv(1024)
+            # print("Recv ", repr(data))
+            if len(data) < 1024 or not data:
+                print("Done Receiving")
+                break
+            f.write(data)
     f.close()
-    print('Successfully get the file')
-    
+
     x = model.preprocess(path)
     y = model.predict(x)
+    print("Classification result :", y)
     
-    if y == 1:
-      conn.send("1")
+    if y in [0, 2, 5, 9]:
+        conn.send(b"0")
     else:
-      conn.send("0")
+        conn.send(b"1")
     
-    conn.send('Thank you for connecting')
     conn.close()

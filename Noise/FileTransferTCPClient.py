@@ -7,29 +7,30 @@ import socket
 # Create a socket object
 s = socket.socket() 
 # Ip address that the TCPServer is there            
-host = "1somehing.11somehing."
+host = "203.252.43.96"
 # Reserve a port for your service every new transfer wants a new port 
 #   or you must wait.
 port = 50000                     
 
 s.connect((host, port))
-s.send("Hello, Server!")
+s.send(b"Hello, Server!")
 
 # The file you want to tranfser must be in the same folder or path
 #   with this file running 
-filename='recorded_file.wav' 
-f = open(filename,'rb')
-l = f.read(1024)
-while (l):
-   s.send(l)
-   # print('Sent ',repr(l))
-   l = f.read(1024)
+filename = 'recorded_file.wav'
+f = open(filename, 'rb')
+buf = f.read(1024)
+while buf:
+    s.send(buf)
+    # print('Sent ', repr(buf))
+    buf = f.read(1024)
 f.close()
 print('Done sending')
 
 answer = s.recv(1024)
-if answer[0] == 1:
-   # generate warning
+if answer == b"1":
+    # generate warning
+    print("WARNING!")
 
 s.close()
 print('connection closed')

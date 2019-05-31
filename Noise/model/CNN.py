@@ -17,6 +17,7 @@ class CNN:
         chroma_cq = np.mean(librosa.feature.chroma_cqt(y=y, sr=sr, n_chroma=40).T, axis=0)
         chroma_cens = np.mean(librosa.feature.chroma_cens(y=y, sr=sr, n_chroma=40).T, axis=0)
         features = np.reshape(np.vstack((mfccs, melspectrogram, chroma_stft, chroma_cq, chroma_cens)), (40, 5))
+        features = features[np.newaxis, :, :, np.newaxis]
 
         return features
 
@@ -83,4 +84,4 @@ class CNN:
     def predict(self, x):
         print('========== PREDICTION START ==========')
         y_pred = self.model.predict_classes(x)
-        return y_pred
+        return y_pred[0]
